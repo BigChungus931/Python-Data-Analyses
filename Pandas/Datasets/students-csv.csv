@@ -1,0 +1,5 @@
+names,scores,pass,city
+Alex,88,TRUE,NYC
+Bob,95,TRUE,London
+Diana,72,TRUE,Naples
+Jane,61,FALSE,Seattle

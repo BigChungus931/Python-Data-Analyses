@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Alex",
+    "score": 88,
+    "city": "NYC"
+  },
+  {
+    "name": "Bob",
+    "score": 95,
+    "city": "London"
+  },
+  {
+    "name": "Diana",
+    "score": 72,
+    "city": "Naples"
+  },
+  {
+    "name": "Jane",
+    "score": 61,
+    "city": "Seattle"
+  }
+]
