@@ -2,4 +2,9 @@ names,scores,pass,city
 Alex,88,TRUE,NYC
 Bob,95,TRUE,London
 Diana,72,TRUE,Naples
-Jane,61,FALSE,Seattle
+Jane,59,FALSE,Seattle
+Mike,98,TRUE,Toronto
+Alisa,52,FALSE,Amsterdam
+Natasha,81,TRUE,Miami
+Maria,,TRUE,Curitiba
+Alex,88,TRUE,NYC
