@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guess the Output 🐼💻</title>
+<style>
+  :root {
+    --bg-top: #101820;
+    --bg-bottom: #1c2b36;
+    --panel: #16222c;
+    --code-bg: #0d1520;
+    --accent: #ffd166;
+    --accent2: #4fd4ff;
+    --bamboo: #7cb342;
+    --bamboo-dark: #9be564;
+    --text: #eef3f6;
+    --muted: #93a3ad;
+    --wrong: #ff6b6b;
+    --right: #56d27f;
+    --shadow: rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif;
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+    color: var(--text);
+    padding: 24px 16px 80px;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 26px;
+  }
+
+  .panda-face {
+    font-size: 60px;
+    line-height: 1;
+    margin-bottom: 6px;
+    display: inline-block;
+    animation: blink 3.5s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+  }
+
+  h1 {
+    font-size: clamp(26px, 6vw, 40px);
+    margin: 0 0 8px;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0;
+  }
+
+  .progress-shell {
+    background: var(--panel);
+    border-radius: 999px;
+    height: 16px;
+    overflow: hidden;
+    margin: 20px 0 6px;
+    border: 2px solid var(--accent2);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--bamboo) 0%, var(--accent) 100%);
+    border-radius: 999px;
+    transition: width 0.35s ease;
+  }
+
+  .progress-label {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 2px solid #263a47;
+    border-radius: 18px;
+    padding: 26px 22px;
+    box-shadow: 0 10px 30px var(--shadow);
+  }
+
+  .q-number {
+    display: inline-block;
+    background: var(--accent2);
+    color: #08131a;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    letter-spacing: 0.04em;
+  }
+
+  .q-text {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1.4;
+    margin: 0 0 14px;
+    color: var(--text);
+  }
+
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid #24343f;
+    border-left: 4px solid var(--accent2);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+
+  .code-block pre {
+    margin: 0;
+    font-family: 'Consolas', 'Menlo', 'Courier New', monospace;
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: #cdeaff;
+    white-space: pre;
+  }
+
+  .code-block .cmt { color: #6a8091; }
+  .code-block .str { color: #ffd166; }
+  .code-block .kw  { color: #ff9b7a; }
+  .code-block .num { color: #9be564; }
+
+  .prompt-line {
+    font-size: 14px;
+    color: var(--muted);
+    margin: -6px 0 16px;
+    font-style: italic;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-btn {
+    text-align: left;
+    background: #0f1b24;
+    border: 2px solid #274353;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14.5px;
+    font-family: 'Consolas', 'Menlo', 'Courier New', monospace;
+    color: var(--text);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent2);
+    background: #132430;
+    transform: translateY(-2px);
+  }
+
+  .option-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #08131a;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: 'Trebuchet MS', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .option-btn.correct {
+    background: #10301f;
+    border-color: var(--right);
+  }
+  .option-btn.correct .option-letter { background: var(--right); }
+
+  .option-btn.incorrect {
+    background: #331414;
+    border-color: var(--wrong);
+  }
+  .option-btn.incorrect .option-letter { background: var(--wrong); }
+
+  .option-btn:disabled { cursor: default; opacity: 0.9; }
+
+  .feedback {
+    margin-top: 18px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: bold;
+    display: none;
+    font-family: 'Trebuchet MS', sans-serif;
+  }
+  .feedback.show { display: block; }
+  .feedback.right { background: #10301f; color: var(--bamboo-dark); }
+  .feedback.wrong { background: #331414; color: #ff9b9b; }
+
+  .next-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: var(--accent2);
+    color: #08131a;
+    font-size: 15px;
+    font-weight: bold;
+    font-family: 'Trebuchet MS', sans-serif;
+    cursor: pointer;
+    display: none;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { background: #7de3ff; }
+
+  .results { display: none; text-align: center; }
+  .results.show { display: block; }
+  .results .panda-face { font-size: 78px; }
+
+  .score-big {
+    font-size: 52px;
+    font-weight: bold;
+    color: var(--accent);
+    margin: 8px 0 4px;
+  }
+
+  .score-sub {
+    font-size: 17px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+
+  .score-msg {
+    font-size: 17px;
+    font-weight: bold;
+    background: var(--panel);
+    border: 2px dashed var(--accent2);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  .restart-btn {
+    padding: 13px 26px;
+    border: none;
+    border-radius: 12px;
+    background: var(--bamboo);
+    color: #08210a;
+    font-size: 15px;
+    font-weight: bold;
+    font-family: 'Trebuchet MS', sans-serif;
+    cursor: pointer;
+  }
+  .restart-btn:hover { background: var(--bamboo-dark); }
+
+  #quiz-area.hide { display: none; }
+
+  footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 12.5px;
+    color: #5a6b75;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="panda-face">🐼</div>
+    <h1>Guess the Output</h1>
+    <p class="subtitle">Read the pandas code, then pick what it prints!</p>
+  </header>
+
+  <div class="progress-shell"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">Question 1 of 40</div>
+
+  <div id="quiz-area">
+    <div class="card">
+      <div class="q-number" id="qNumber">QUESTION 1</div>
+      <p class="q-text" id="qText">What does this code print?</p>
+      <div class="code-block"><pre id="qCode"></pre></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="nextBtn">Next Question →</button>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="panda-face">🎉🐼🎉</div>
+    <div class="score-big" id="scoreBig">0 / 40</div>
+    <div class="score-sub" id="scorePercent">0%</div>
+    <div class="score-msg" id="scoreMsg"></div>
+    <button class="restart-btn" id="restartBtn">Try Again</button>
+  </div>
+
+  <footer>Code-output practice, based on Modules 1–3: pandas basics, Series, and DataFrames 🎋</footer>
+</div>
+
+<script>
+const questions = [
+  {
+    code: `salaries = pd.Series([4000, 2500, 3800, 3200, 5100],
+    index=["John", "Mary", "Mike", "Mia", "Madina"])
+print(salaries["Mary"])`,
+    options: ["4000", "2500", "1", "\"Mary\""],
+    correct: 1
+  },
+  {
+    code: `df = pd.DataFrame({
+    "Name": ["John", "Mary"],
+    "Salary": [4000, 2500]
+})
+print(type(df["Salary"]))`,
+    options: ["<class 'pandas.core.frame.DataFrame'>", "<class 'pandas.core.series.Series'>", "<class 'list'>", "<class 'dict'>"],
+    correct: 1
+  },
+  {
+    code: `df = pd.DataFrame({"Salary": [4000, 2500, 3800, 3200, 5100]})
+arr = df["Salary"].values
+print(type(arr))`,
+    options: ["<class 'numpy.ndarray'>", "<class 'pandas.core.series.Series'>", "<class 'list'>", "<class 'int'>"],
+    correct: 0
+  },
+  {
+    code: `salaries = pd.Series([4000, 2500, 3800, 3200, 5100])
+print(np.mean(salaries))`,
+    options: ["4000.0", "3720.0", "5100.0", "18600"],
+    correct: 1
+  },
+  {
+    code: `salaries = pd.Series([4000, 2500, 3800, 3200, 5100])
+print(salaries.max())`,
+    options: ["5100", "4000", "3720.0", "5"],
+    correct: 0
+  },
+  {
+    code: `scores = pd.Series({"Alice": 88, "Bob": 95, "Carlos": 72})
+print(scores["Bob"])`,
+    options: ["88", "95", "72", "\"Bob\""],
+    correct: 1
+  },
+  {
+    code: `arr = np.array([88, 95, 72, 61, 90])
+scores = pd.Series(arr)
+print(scores.dtype)`,
+    options: ["object", "float64", "int64", "str"],
+    correct: 2
+  },
+  {
+    code: `temperatures = pd.Series(
+    [29, 31, 27, 33, 30, 28, 26],
+    index=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+)
+print(temperatures["Wed"])`,
+    options: ["29", "31", "27", "33"],
+    correct: 2
+  },
+  {
+    code: `a = pd.Series([10, 20, 30], index=["x", "y", "z"])
+b = pd.Series([1, 2, 3], index=["y", "z", "w"])
+result = a + b
+print(result["y"])`,
+    options: ["20", "21.0", "22.0", "NaN"],
+    correct: 1
+  },
+  {
+    code: `a = pd.Series([10, 20, 30], index=["x", "y", "z"])
+b = pd.Series([1, 2, 3], index=["y", "z", "w"])
+result = a + b
+print(result["x"])`,
+    options: ["10", "0", "NaN", "It causes an error"],
+    correct: 2
+  },
+  {
+    code: `scores = pd.Series(
+    [88, 95, 72, 61, 90],
+    index=["Alice","Bob","Carlos","Diana","Eve"]
+)
+print(scores.iloc[1])`,
+    options: ["88", "95", "72", "\"Bob\""],
+    correct: 1
+  },
+  {
+    code: `scores = pd.Series(
+    [88, 95, 72, 61, 90],
+    index=["Alice","Bob","Carlos","Diana","Eve"]
+)
+print(scores.loc["Bob"])`,
+    options: ["88", "95", "72", "KeyError"],
+    correct: 1
+  },
+  {
+    code: `scores = pd.Series(
+    [88, 95, 72, 61, 90],
+    index=["Alice","Bob","Carlos","Diana","Eve"]
+)
+print(len(scores.iloc[1:3]))`,
+    options: ["1", "2", "3", "4"],
+    correct: 1
+  },
+  {
+    code: `scores = pd.Series(
+    [88, 95, 72, 61, 90],
+    index=["Alice","Bob","Carlos","Diana","Eve"]
+)
+print(len(scores.loc["Bob":"Carlos"]))`,
+    options: ["1", "2", "3", "0"],
+    correct: 1
+  },
+  {
+    code: `s = pd.Series(["a", "b", "c"], index=[10, 20, 30])
+print(s.iloc[0])`,
+    options: ["\"a\"", "\"b\"", "10", "KeyError"],
+    correct: 0
+  },
+  {
+    code: `s = pd.Series(["a", "b", "c"], index=[10, 20, 30])
+print(s.loc[10])`,
+    options: ["\"a\"", "\"b\"", "\"c\"", "KeyError"],
+    correct: 0
+  },
+  {
+    code: `s = pd.Series(["a", "b", "c"], index=[10, 20, 30])
+print(s.loc[0])`,
+    options: ["\"a\"", "0", "None", "KeyError — there's no label 0"],
+    correct: 3
+  },
+  {
+    code: `salaries = pd.Series(
+    [4000, 2500, 3800, 3200, 5100],
+    index=["John","Mary","Mike","Mia","Madina"]
+)
+raised = salaries * 1.10
+print(raised["John"])`,
+    options: ["4000.0", "4400.0", "4040.0", "4100.0"],
+    correct: 1
+  },
+  {
+    code: `salaries = pd.Series(
+    [4000, 2500, 3800, 3200, 5100],
+    index=["John","Mary","Mike","Mia","Madina"]
+)
+mask = salaries > 3500
+print(len(salaries[mask]))`,
+    options: ["2", "3", "4", "5"],
+    correct: 1
+  },
+  {
+    code: `names = pd.Series(["alice", "bob", "carlos", "diana"])
+print(names.str.upper()[0])`,
+    options: ["\"alice\"", "\"ALICE\"", "\"Alice\"", "0"],
+    correct: 1
+  },
+  {
+    code: `names = pd.Series(["alice", "bob", "carlos", "diana"])
+print(names.str.len()[2])`,
+    options: ["3", "5", "6", "\"carlos\""],
+    correct: 2
+  },
+  {
+    code: `names = pd.Series(["alice", "bob", "carlos", "diana"])
+print(names.str.startswith("a")[0])`,
+    options: ["True", "False", "\"a\"", "0"],
+    correct: 0
+  },
+  {
+    code: `names = pd.Series(["alice", "bob", "carlos", "diana"])
+print(names.str.contains("ar")[2])`,
+    options: ["True", "False", "\"carlos\"", "Error"],
+    correct: 0
+  },
+  {
+    code: `salaries = pd.Series(
+    [4000, 2500, 3800, 3200, 5100],
+    index=["John","Mary","Mike","Mia","Madina"]
+)
+def tax_bracket(salary):
+    if salary >= 5000:
+        return "high"
+    elif salary >= 3000:
+        return "mid"
+    else:
+        return "low"
+
+brackets = salaries.apply(tax_bracket)
+print(brackets["Mary"])`,
+    options: ["\"high\"", "\"mid\"", "\"low\"", "2500"],
+    correct: 2
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos", "Diana"],
+    "score": [88, 95, 72, 61],
+}
+df = pd.DataFrame(data)
+print(df.shape)`,
+    options: ["(2, 4)", "(4, 2)", "(4, 4)", "(2, 2)"],
+    correct: 1
+  },
+  {
+    code: `data = {"score": [88, 95, 72, 61]}
+df = pd.DataFrame(data)
+print(df.shape[0])`,
+    options: ["1", "4", "88", "(4, 1)"],
+    correct: 1
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos", "Diana"],
+    "score": [88, 95, 72, 61],
+}
+df = pd.DataFrame(data)
+print(df["score"].mean())`,
+    options: ["78.0", "79.0", "80.0", "316"],
+    correct: 1
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob"],
+    "score": [88, 95],
+}
+df = pd.DataFrame(data)
+print(df.iloc[0, 1])`,
+    options: ["\"Alice\"", "88", "95", "0"],
+    correct: 1
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob"],
+    "score": [88, 95],
+}
+df = pd.DataFrame(data)
+print(df.loc[0, "score"])`,
+    options: ["\"Alice\"", "88", "95", "KeyError"],
+    correct: 1
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos", "Diana"],
+    "score": [88, 95, 72, 61],
+}
+df = pd.DataFrame(data)
+print(len(df.iloc[0:2]))`,
+    options: ["1", "2", "3", "4"],
+    correct: 1
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos", "Diana"],
+    "score": [88, 95, 72, 61],
+}
+df = pd.DataFrame(data)
+print(len(df.loc[0:2]))`,
+    options: ["1", "2", "3", "4"],
+    correct: 2
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos", "Diana"],
+    "score": [88, 95, 72, 61],
+}
+df = pd.DataFrame(data)
+df_indexed = df.set_index("name")
+print(df_indexed.loc["Bob", "score"])`,
+    options: ["\"Bob\"", "88", "95", "1"],
+    correct: 2
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos", "Diana"],
+    "score": [88, 95, 72, 61],
+}
+df = pd.DataFrame(data)
+result = df[df["score"] > 80]
+print(len(result))`,
+    options: ["1", "2", "3", "4"],
+    correct: 1
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos", "Diana"],
+    "score": [88, 95, 72, 61],
+    "passed": [True, True, True, False],
+}
+df = pd.DataFrame(data)
+result = df[(df["score"] > 70) & (df["passed"] == True)]
+print(len(result))`,
+    options: ["1", "2", "3", "4"],
+    correct: 2
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob"],
+    "score": [88, 95],
+}
+df = pd.DataFrame(data)
+print(type(df.iloc[0]))`,
+    options: ["<class 'pandas.core.series.Series'>", "<class 'pandas.core.frame.DataFrame'>", "<class 'list'>", "<class 'dict'>"],
+    correct: 0
+  },
+  {
+    code: `data = {
+    "name": ["Alice", "Bob", "Carlos"],
+    "score": [88, 95, 72],
+}
+df = pd.DataFrame(data)
+print(type(df.iloc[0:2]))`,
+    options: ["<class 'pandas.core.series.Series'>", "<class 'pandas.core.frame.DataFrame'>", "<class 'list'>", "<class 'tuple'>"],
+    correct: 1
+  },
+  {
+    code: `data = {"a": [1, 2], "b": [3, 4]}
+df = pd.DataFrame(data)
+sub = df[["a"]]
+print(type(sub))`,
+    options: ["<class 'pandas.core.series.Series'>", "<class 'pandas.core.frame.DataFrame'>", "<class 'list'>", "<class 'dict'>"],
+    correct: 1
+  },
+  {
+    code: `data = {"a": [1, 2], "b": [3, 4]}
+df = pd.DataFrame(data)
+sub = df["a"]
+print(type(sub))`,
+    options: ["<class 'pandas.core.series.Series'>", "<class 'pandas.core.frame.DataFrame'>", "<class 'list'>", "<class 'dict'>"],
+    correct: 0
+  },
+  {
+    code: `salaries = pd.Series([4000, 2500, 3800])
+doubled = salaries * 2
+print(doubled[1])`,
+    options: ["2500", "5000", "4000", "7600"],
+    correct: 1
+  },
+  {
+    code: `s = pd.Series([1, 2, 3, 4, 5])
+print(s[s > 2].tolist())`,
+    options: ["[1, 2]", "[3, 4, 5]", "[1, 2, 3, 4, 5]", "[]"],
+    correct: 1
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+const qNumber = document.getElementById('qNumber');
+const qCode = document.getElementById('qCode');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const nextBtn = document.getElementById('nextBtn');
+const progressFill = document.getElementById('progressFill');
+const progressLabel = document.getElementById('progressLabel');
+const quizArea = document.getElementById('quiz-area');
+const resultsEl = document.getElementById('results');
+
+function loadQuestion() {
+  answered = false;
+  const item = questions[current];
+  qNumber.textContent = "QUESTION " + (current + 1);
+  qCode.textContent = item.code;
+  optionsEl.innerHTML = "";
+  feedbackEl.className = "feedback";
+  feedbackEl.textContent = "";
+  nextBtn.classList.remove('show');
+
+  const letters = ['A', 'B', 'C', 'D'];
+  item.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = "option-btn";
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`;
+    btn.addEventListener('click', () => selectAnswer(i, btn));
+    optionsEl.appendChild(btn);
+  });
+
+  progressFill.style.width = ((current) / questions.length * 100) + "%";
+  progressLabel.textContent = `Question ${current + 1} of ${questions.length}`;
+}
+
+function selectAnswer(i, btn) {
+  if (answered) return;
+  answered = true;
+  const item = questions[current];
+  const allBtns = optionsEl.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  if (i === item.correct) {
+    btn.classList.add('correct');
+    score++;
+    feedbackEl.textContent = "🎋 Correct! You read the code perfectly!";
+    feedbackEl.className = "feedback show right";
+  } else {
+    btn.classList.add('incorrect');
+    allBtns[item.correct].classList.add('correct');
+    feedbackEl.textContent = "🐼 Not quite — the correct output is highlighted.";
+    feedbackEl.className = "feedback show wrong";
+  }
+
+  nextBtn.classList.add('show');
+  nextBtn.textContent = (current === questions.length - 1) ? "See My Score →" : "Next Question →";
+}
+
+nextBtn.addEventListener('click', () => {
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+  } else {
+    showResults();
+  }
+});
+
+function showResults() {
+  progressFill.style.width = "100%";
+  progressLabel.textContent = `Question ${questions.length} of ${questions.length}`;
+  quizArea.classList.add('hide');
+  resultsEl.classList.add('show');
+
+  document.getElementById('scoreBig').textContent = `${score} / ${questions.length}`;
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('scorePercent').textContent = pct + "%";
+
+  let msg = "";
+  if (pct >= 90) msg = "🏆 Incredible! You can predict pandas code like a pro!";
+  else if (pct >= 70) msg = "🎉 Great job! You're really understanding what the code does!";
+  else if (pct >= 50) msg = "👍 Good effort! Re-read the trickier examples and try again.";
+  else msg = "🌱 Good start! Practice reading the code line by line, then try again.";
+  document.getElementById('scoreMsg').textContent = msg;
+}
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  current = 0;
+  score = 0;
+  resultsEl.classList.remove('show');
+  quizArea.classList.remove('hide');
+  loadQuestion();
+});
+
+loadQuestion();
+</script>
+</body>
+</html>

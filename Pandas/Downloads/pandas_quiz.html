@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Great Pandas Quiz 🐼</title>
+<style>
+  :root {
+    --bg-top: #fff8ec;
+    --bg-bottom: #ffe9d6;
+    --panda-black: #2b2b2b;
+    --panda-white: #ffffff;
+    --bamboo: #7cb342;
+    --bamboo-dark: #558b2f;
+    --accent-pink: #ff8fa3;
+    --accent-gold: #ffb84d;
+    --card: #ffffff;
+    --shadow: rgba(43,43,43,0.12);
+    --wrong: #ff6b6b;
+    --right: #56c271;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif;
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+    color: var(--panda-black);
+    padding: 24px 16px 80px;
+  }
+
+  .wrap {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .panda-face {
+    font-size: 64px;
+    line-height: 1;
+    margin-bottom: 8px;
+    display: inline-block;
+    animation: sway 3s ease-in-out infinite;
+  }
+
+  @keyframes sway {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+
+  h1 {
+    font-size: clamp(28px, 6vw, 42px);
+    margin: 0 0 8px;
+    color: var(--bamboo-dark);
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: #6b6b60;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  /* Progress bar */
+  .progress-shell {
+    background: #fff;
+    border-radius: 999px;
+    height: 18px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px var(--shadow);
+    margin: 20px 0 6px;
+    border: 2px solid var(--panda-black);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--bamboo) 0%, var(--accent-gold) 100%);
+    border-radius: 999px;
+    transition: width 0.35s ease;
+  }
+
+  .progress-label {
+    text-align: center;
+    font-size: 13px;
+    color: #7a7a70;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+
+  /* Quiz card */
+  .card {
+    background: var(--card);
+    border: 3px solid var(--panda-black);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 6px 6px 0 var(--panda-black);
+  }
+
+  .q-number {
+    display: inline-block;
+    background: var(--panda-black);
+    color: #fff;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+
+  .q-text {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1.4;
+    margin: 0 0 22px;
+    color: var(--panda-black);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .option-btn {
+    text-align: left;
+    background: #fffdf8;
+    border: 2.5px solid #e4ddc9;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--bamboo);
+    background: #f3f9ea;
+    transform: translateY(-2px);
+  }
+
+  .option-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--panda-black);
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .option-btn.correct {
+    background: #e7f9ec;
+    border-color: var(--right);
+  }
+  .option-btn.correct .option-letter {
+    background: var(--right);
+  }
+
+  .option-btn.incorrect {
+    background: #fdeaea;
+    border-color: var(--wrong);
+  }
+  .option-btn.incorrect .option-letter {
+    background: var(--wrong);
+  }
+
+  .option-btn:disabled {
+    cursor: default;
+    opacity: 0.85;
+  }
+
+  .feedback {
+    margin-top: 18px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.right { background: #e7f9ec; color: var(--bamboo-dark); }
+  .feedback.wrong { background: #fdeaea; color: #c0392b; }
+
+  .next-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: var(--bamboo-dark);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+    display: none;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { background: #46701f; }
+
+  /* Results */
+  .results {
+    display: none;
+    text-align: center;
+  }
+  .results.show { display: block; }
+
+  .results .panda-face {
+    font-size: 84px;
+  }
+
+  .score-big {
+    font-size: 56px;
+    font-weight: bold;
+    color: var(--bamboo-dark);
+    margin: 10px 0 4px;
+  }
+
+  .score-sub {
+    font-size: 18px;
+    color: #6b6b60;
+    margin-bottom: 20px;
+  }
+
+  .score-msg {
+    font-size: 18px;
+    font-weight: bold;
+    background: #fff8ec;
+    border: 2px dashed var(--accent-gold);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .restart-btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 14px;
+    background: var(--accent-pink);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .restart-btn:hover { background: #ff6f88; }
+
+  #quiz-area.hide { display: none; }
+
+  footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 13px;
+    color: #a3a396;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="panda-face">🐼</div>
+    <h1>The Great Pandas Quiz</h1>
+    <p class="subtitle">50 questions about the pandas library — let's see what you remember!</p>
+  </header>
+
+  <div class="progress-shell"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">Question 1 of 50</div>
+
+  <div id="quiz-area">
+    <div class="card">
+      <div class="q-number" id="qNumber">QUESTION 1</div>
+      <p class="q-text" id="qText"></p>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="nextBtn">Next Question →</button>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="panda-face">🎉🐼🎉</div>
+    <div class="score-big" id="scoreBig">0 / 50</div>
+    <div class="score-sub" id="scorePercent">0%</div>
+    <div class="score-msg" id="scoreMsg"></div>
+    <button class="restart-btn" id="restartBtn">Try Again</button>
+  </div>
+
+  <footer>Based on Modules 1–3: pandas basics, Series, and DataFrames 🎋</footer>
+</div>
+
+<script>
+const questions = [
+  // ===== Module 1: What is pandas =====
+  {q:"What is pandas mainly used for?", options:["Editing photos","Working with data in tables, like Excel but with code","Building websites","Playing music"], correct:1},
+  {q:"What is one big advantage pandas has over Excel?", options:["It looks nicer","Your steps are reproducible with code instead of clicks","It never needs a computer","It can only handle 10 rows"], correct:1},
+  {q:"Around how many rows can Excel start struggling with?", options:["10","1,000","100,000","10 million"], correct:2},
+  {q:"How many rows can pandas handle without much trouble?", options:["Only 50","About 500","Millions","None, it's slower than Excel"], correct:2},
+  {q:"What line of code do almost all pandas users write at the top of their file?", options:["import pandas as pd","open pandas now","pandas.start()","use pandas;"], correct:0},
+  {q:"Why do people import pandas as 'pd'?", options:["It's required by law","It's just a short, common nickname to save typing","pd stands for 'python data'","pandas won't work without it"], correct:1},
+  {q:"Which command installs pandas for the first time?", options:["pd install pandas","import pandas","pip install pandas","pandas.setup()"], correct:2},
+  {q:"Which library is almost always imported alongside pandas?", options:["NumPy","Turtle","Pygame","Tkinter"], correct:0},
+  {q:"What are the two core building blocks of pandas?", options:["Lists and Loops","Series and DataFrame","Rows and Functions","Tables and Graphs"], correct:1},
+  {q:"A pandas Series is best described as...", options:["A whole spreadsheet","A single labeled column of data","A type of chart","A Python loop"], correct:1},
+  {q:"A pandas DataFrame is best described as...", options:["One single value","A full table made of multiple columns","A picture","A type of variable name"], correct:1},
+  {q:"Each column inside a DataFrame is actually a...", options:["Dictionary","Series","Tuple","Set"], correct:1},
+  {q:"What is the 'index' of a Series?", options:["The column names","The row labels on the left side","The last value only","A type of error"], correct:1},
+  {q:"pandas is built on top of which library?", options:["NumPy","Matplotlib","Flask","Requests"], correct:0},
+  {q:"What is NumPy mainly good at?", options:["Making websites","Fast math with arrays","Sending emails","Drawing shapes"], correct:1},
+  {q:"You can pull one column out of a DataFrame using...", options:["df.pull('col')","df['col']","df->col","df.get.col"], correct:1},
+  {q:"When you pull one column out of a DataFrame, what do you get back?", options:["A DataFrame","A Series","A list of lists","An error"], correct:1},
+
+  // ===== Module 2: Series =====
+  {q:"If you create a Series from a plain list, what index does pandas give it by default?", options:["Letters a, b, c...","Integers starting at 0","Random numbers","No index at all"], correct:1},
+  {q:"If you create a Series from a dictionary, what becomes the index?", options:["The dictionary's keys","The dictionary's values","Nothing, dicts can't be used","Random numbers"], correct:0},
+  {q:"Which of these can you use to build a pandas Series?", options:["A list","A dictionary","A NumPy array","All of the above"], correct:3},
+  {q:"How do you set a custom index when creating a Series?", options:["Using the index= parameter","You can never change the index","Using color=","Using label.set()"], correct:0},
+  {q:"When two Series are added together, how does pandas decide which values to combine?", options:["By their position only","By matching their index labels","Randomly","By alphabetical order"], correct:1},
+  {q:"What happens when index labels don't match during a Series operation?", options:["pandas crashes","You get NaN (missing value) for that label","It uses 0 instead","It skips that row completely"], correct:1},
+  {q:"Which accessor selects a value by its POSITION (like 0, 1, 2...)?", options:[".loc","iloc",".name",".str"], correct:1},
+  {q:"Which accessor selects a value by its LABEL (like a name)?", options:[".iloc",".loc",".pos",".index"], correct:1},
+  {q:"With .iloc slicing, what happens to the end position?", options:["It is included","It is excluded, just like a Python list","It causes an error","It is doubled"], correct:1},
+  {q:"With .loc slicing, what happens to the end label?", options:["It is excluded","It is included","It is ignored","It is always 0"], correct:1},
+  {q:"What does 'vectorized operation' mean in pandas?", options:["Applying an action to every value at once, without a loop","Drawing a vector graphic","Deleting all values","Making a Series smaller"], correct:0},
+  {q:"Why are vectorized operations faster than a Python for loop?", options:["They use magic","They run in optimized C code through NumPy","They skip most of the data","They only work on small Series"], correct:1},
+  {q:"If salaries > 3500 is applied to a Series, what do you get back?", options:["A single number","A new Series of True/False values","An error","A sorted list"], correct:1},
+  {q:"What accessor lets you use string methods on every value in a text Series?", options:[".txt",".str",".char",".upper"], correct:1},
+  {q:"Which of these would turn every name in a Series to uppercase?", options:["names.str.upper()","names.upper.all()","names.UPPER()","names.cap()"], correct:0},
+  {q:"What method lets you run your own custom function on every element of a Series?", options:[".apply()",".run()",".doit()",".loop()"], correct:0},
+  {q:"On a huge dataset, how much faster can vectorized operations be compared to a plain Python loop?", options:["Never faster","About 2 times faster","Often around 100 times faster","Exactly the same speed"], correct:2},
+
+  // ===== Module 3: DataFrames =====
+  {q:"When you build a DataFrame from a dictionary, what do the dictionary's keys become?", options:["Row labels","Column names","Index values","Nothing, they are ignored"], correct:1},
+  {q:"When building a DataFrame from a dictionary, what must be true about all the value lists?", options:["They must all be the same length","They must all be numbers","They must all be strings","They must all be sorted"], correct:0},
+  {q:"Which function reads a CSV file into a DataFrame?", options:["pd.load_csv()","pd.open_csv()","pd.read_csv()","pd.import_csv()"], correct:2},
+  {q:"Which function saves a DataFrame to a CSV file?", options:["df.write_csv()","df.save_csv()","df.to_csv()","df.export_csv()"], correct:2},
+  {q:"When saving to CSV, what does index=False do?", options:["Deletes all your data","Stops the row numbers from being saved as an extra column","Makes the file bigger","Sorts the data"], correct:1},
+  {q:"Which command shows you the FIRST 5 rows of a DataFrame?", options:["df.top()","df.first()","df.head()","df.start()"], correct:2},
+  {q:"Which command shows you the LAST rows of a DataFrame?", options:["df.tail()","df.end()","df.bottom()","df.last()"], correct:0},
+  {q:"What does df.shape tell you?", options:["The colors used","The number of (rows, columns)","The file name","The average value"], correct:1},
+  {q:"Which command shows column names, data types, and missing values?", options:["df.describe()","df.info()","df.shape()","df.columns()"], correct:1},
+  {q:"Which command gives you summary statistics like mean, min, and max?", options:["df.info()","df.describe()","df.head()","df.stats()"], correct:1},
+  {q:"Selecting one column with df['score'] returns a...", options:["DataFrame","Series","Number","String"], correct:1},
+  {q:"Selecting multiple columns with df[['name','score']] returns a...", options:["Series","A single value","DataFrame","Error"], correct:2},
+  {q:"Why is bracket notation df['col'] usually safer than dot notation df.col?", options:["It's not safer, they're identical always","Dot notation can break if the column name matches a built-in method","Bracket notation is slower","Dot notation is faster"], correct:1},
+  {q:"In a DataFrame, .iloc[row, col] and .loc[row, col] both take how many arguments?", options:["One","Two: rows then columns","Three","Zero"], correct:1},
+  {q:"Which symbol do you use for 'AND' when combining two conditions in pandas filtering?", options:["and","&&","&","+"], correct:2},
+  {q:"Which symbol do you use for 'OR' when combining two conditions in pandas filtering?", options:["or","|","||","OR"], correct:1},
+  {q:"What does df.set_index('name') do?", options:["Deletes the name column","Promotes the 'name' column to become the row labels","Sorts the DataFrame","Renames the DataFrame"], correct:1},
+  {q:"What does df.reset_index() do?", options:["Moves the index back into a regular column","Deletes all data","Adds a new column of zeros","Crashes the program"], correct:0},
+  {q:"Do set_index() and reset_index() change the original DataFrame automatically?", options:["Yes, always instantly","No — you need to reassign the result unless you use inplace=True","They delete the DataFrame","They only work on Series"], correct:1},
+  {q:"What is the very first command most people run after loading a new dataset?", options:["df.describe()","df.shape or df.head()","df.to_csv()","df.plot()"], correct:1}
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+const qNumber = document.getElementById('qNumber');
+const qText = document.getElementById('qText');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const nextBtn = document.getElementById('nextBtn');
+const progressFill = document.getElementById('progressFill');
+const progressLabel = document.getElementById('progressLabel');
+const quizArea = document.getElementById('quiz-area');
+const resultsEl = document.getElementById('results');
+
+function loadQuestion() {
+  answered = false;
+  const item = questions[current];
+  qNumber.textContent = "QUESTION " + (current + 1);
+  qText.textContent = item.q;
+  optionsEl.innerHTML = "";
+  feedbackEl.className = "feedback";
+  feedbackEl.textContent = "";
+  nextBtn.classList.remove('show');
+
+  const letters = ['A', 'B', 'C', 'D'];
+  item.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = "option-btn";
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => selectAnswer(i, btn));
+    optionsEl.appendChild(btn);
+  });
+
+  progressFill.style.width = ((current) / questions.length * 100) + "%";
+  progressLabel.textContent = `Question ${current + 1} of ${questions.length}`;
+}
+
+function selectAnswer(i, btn) {
+  if (answered) return;
+  answered = true;
+  const item = questions[current];
+  const allBtns = optionsEl.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  if (i === item.correct) {
+    btn.classList.add('correct');
+    score++;
+    feedbackEl.textContent = "🎋 Correct! Great job!";
+    feedbackEl.className = "feedback show right";
+  } else {
+    btn.classList.add('incorrect');
+    allBtns[item.correct].classList.add('correct');
+    feedbackEl.textContent = "🐼 Not quite — the right answer is highlighted.";
+    feedbackEl.className = "feedback show wrong";
+  }
+
+  nextBtn.classList.add('show');
+  nextBtn.textContent = (current === questions.length - 1) ? "See My Score →" : "Next Question →";
+}
+
+nextBtn.addEventListener('click', () => {
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+  } else {
+    showResults();
+  }
+});
+
+function showResults() {
+  progressFill.style.width = "100%";
+  progressLabel.textContent = `Question ${questions.length} of ${questions.length}`;
+  quizArea.classList.add('hide');
+  resultsEl.classList.add('show');
+
+  document.getElementById('scoreBig').textContent = `${score} / ${questions.length}`;
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('scorePercent').textContent = pct + "%";
+
+  let msg = "";
+  if (pct >= 90) msg = "🏆 Amazing! You're a pandas superstar!";
+  else if (pct >= 70) msg = "🎉 Great work! You really know your pandas!";
+  else if (pct >= 50) msg = "👍 Nice effort! A bit more practice and you'll be a pro.";
+  else msg = "🌱 Good start! Try reading through the modules again and take the quiz once more.";
+  document.getElementById('scoreMsg').textContent = msg;
+}
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  current = 0;
+  score = 0;
+  resultsEl.classList.remove('show');
+  quizArea.classList.remove('hide');
+  loadQuestion();
+});
+
+loadQuestion();
+</script>
+</body>
+</html>
