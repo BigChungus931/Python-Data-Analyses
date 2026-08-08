@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>np.play() — a numpy learning game</title>
+<style>
+  :root{
+    --bg:#0B1021;
+    --surface:#131A2E;
+    --surface-2:#1B2440;
+    --line:#2A3557;
+    --teal:#4FD1C5;
+    --teal-dim:#2E5C58;
+    --amber:#F5A623;
+    --red:#FF6B6B;
+    --text:#E8ECF4;
+    --muted:#7C89A8;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    --sans: -apple-system, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(79,209,197,0.07), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(245,166,35,0.06), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding:32px 16px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  /* header */
+  header{margin-bottom:22px;}
+  .title{
+    font-family:var(--mono);
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:-0.5px;
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  }
+  .title .fn{color:var(--teal);}
+  .title .paren{color:var(--muted);}
+  .subtitle{color:var(--muted);font-size:14px;margin-top:6px;}
+
+  /* stat bar */
+  .stats{
+    display:flex;gap:10px;margin:20px 0 18px;flex-wrap:wrap;
+  }
+  .stat{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px 14px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--muted);
+    display:flex;align-items:center;gap:6px;
+  }
+  .stat b{color:var(--text);font-weight:600;}
+  .hearts{letter-spacing:2px;}
+  .heart-on{color:var(--red);}
+  .heart-off{color:var(--line);}
+
+  /* progress grid — the signature element: an actual numpy-style array that fills in */
+  .array-progress{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:22px;
+  }
+  .array-progress .label{
+    font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px;
+    display:flex;justify-content:space-between;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(6, 1fr);
+    gap:6px;
+  }
+  .cell{
+    aspect-ratio:1;
+    border-radius:6px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:12px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--muted);
+    transition:all .35s ease;
+  }
+  .cell.done{
+    background:var(--teal-dim);
+    border-color:var(--teal);
+    color:var(--teal);
+    font-weight:700;
+  }
+  .cell.current{
+    border-color:var(--amber);
+    color:var(--amber);
+    box-shadow:0 0 0 2px rgba(245,166,35,0.15);
+  }
+
+  /* the notebook cell */
+  .cell-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .cell-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .badge{
+    font-family:var(--mono);
+    font-size:11px;
+    padding:3px 9px;
+    border-radius:999px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .badge.predict{background:rgba(79,209,197,0.12);color:var(--teal);}
+  .badge.write{background:rgba(245,166,35,0.12);color:var(--amber);}
+  .cell-head .lvl{font-family:var(--mono);color:var(--muted);font-size:13px;}
+
+  .cell-body{padding:20px;}
+  .task{font-size:15px;line-height:1.55;margin-bottom:14px;color:var(--text);}
+
+  .repl{
+    background:#0A0E1C;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 16px;
+    font-family:var(--mono);
+    font-size:13.5px;
+    line-height:1.6;
+    margin-bottom:16px;
+    overflow-x:auto;
+  }
+  .repl .in-label{color:var(--teal);}
+  .repl .out-label{color:var(--amber);}
+  .repl pre{margin:2px 0 10px;white-space:pre-wrap;color:var(--text);}
+  .repl pre:last-child{margin-bottom:0;}
+
+  .answer-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .answer-row input[type="text"]{
+    flex:1;min-width:200px;
+    background:#0A0E1C;
+    border:1px solid var(--line);
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:14px;
+    padding:11px 14px;
+    border-radius:8px;
+    outline:none;
+  }
+  .answer-row input[type="text"]:focus{border-color:var(--teal);}
+  .answer-row input.wrong-flash{border-color:var(--red);animation:shake .3s;}
+  .answer-row input.right-flash{border-color:var(--teal);}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-4px);}
+    75%{transform:translateX(4px);}
+  }
+
+  button{
+    font-family:var(--sans);
+    font-weight:600;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  button:active{transform:scale(0.97);}
+  .btn-run{
+    background:var(--teal);
+    color:#062421;
+    padding:11px 20px;
+    font-size:14px;
+  }
+  .btn-run:hover{opacity:0.9;}
+  .btn-hint{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--line);
+    padding:8px 14px;
+    font-size:12.5px;
+    margin-top:12px;
+  }
+  .btn-hint:hover{color:var(--amber);border-color:var(--amber);}
+  .btn-next{
+    background:var(--amber);
+    color:#2b1c02;
+    padding:11px 22px;
+    font-size:14px;
+  }
+
+  .hint-box{
+    margin-top:10px;
+    font-size:13px;
+    color:var(--amber);
+    font-family:var(--mono);
+    background:rgba(245,166,35,0.08);
+    border:1px solid rgba(245,166,35,0.25);
+    padding:10px 12px;
+    border-radius:8px;
+    display:none;
+  }
+
+  .feedback{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:8px;
+    font-size:14px;
+    display:none;
+    font-family:var(--mono);
+  }
+  .feedback.correct{
+    display:block;
+    background:rgba(79,209,197,0.10);
+    border:1px solid rgba(79,209,197,0.35);
+    color:var(--teal);
+  }
+  .feedback.incorrect{
+    display:block;
+    background:rgba(255,107,107,0.08);
+    border:1px solid rgba(255,107,107,0.3);
+    color:var(--red);
+  }
+  .feedback .explain{color:var(--muted);font-family:var(--sans);margin-top:6px;font-size:13px;}
+
+  .foot-row{display:flex;justify-content:flex-end;margin-top:14px;}
+
+  /* end screens */
+  .end-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:36px 28px;
+    text-align:center;
+  }
+  .end-card h2{
+    font-family:var(--mono);
+    font-size:26px;
+    margin:0 0 8px;
+  }
+  .end-card .grade{
+    font-family:var(--mono);
+    font-size:60px;
+    font-weight:800;
+    color:var(--teal);
+    margin:14px 0;
+  }
+  .end-card p{color:var(--muted);font-size:14px;}
+  .end-card .score-line{font-family:var(--mono);font-size:15px;color:var(--text);margin:14px 0;}
+
+  @media (max-width:480px){
+    .grid{grid-template-columns:repeat(4,1fr);}
+    .title{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title"><span class="fn">np</span><span class="paren">.</span><span class="fn">play</span><span class="paren">()</span></div>
+    <div class="subtitle">Solve or write numpy to advance. Twelve cells stand between you and a finished array.</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">score&nbsp;<b id="stat-score">0</b></div>
+    <div class="stat">streak&nbsp;<b id="stat-streak">0</b></div>
+    <div class="stat">lives&nbsp;<span class="hearts" id="stat-lives"></span></div>
+  </div>
+
+  <div class="array-progress">
+    <div class="label"><span>progress = np.zeros(12)</span><span id="progress-count">0/12</span></div>
+    <div class="grid" id="progress-grid"></div>
+  </div>
+
+  <div id="game-area"></div>
+  <div id="end-area"></div>
+
+</div>
+
+<script>
+(function(){
+
+  const levels = [
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["arr = np.array([1, 2, 3, 4, 5])", "print(arr.shape)"],
+      answer: "(5,)",
+      hint: "shape counts the elements along each axis. A flat 5-element array has one axis of length 5 — written as a 1-tuple.",
+      explain: "arr.shape is (5,) — a tuple with a trailing comma because it has only one dimension."
+    },
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["print(np.arange(0, 10, 2))"],
+      answer: "[0, 2, 4, 6, 8]",
+      hint: "arange(start, stop, step) — stop is exclusive.",
+      explain: "np.arange(0, 10, 2) counts from 0 up to (but not including) 10, in steps of 2: [0, 2, 4, 6, 8]."
+    },
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["arr = np.array([10, 20, 30, 40, 50])", "print(arr[2])"],
+      answer: "30",
+      hint: "Indexing is zero-based: index 0 is the first element.",
+      explain: "Index 2 is the third element (counting from 0): 10, 20, [30], 40, 50."
+    },
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["arr = np.array([10, 20, 30, 40, 50])", "print(arr[1:4])"],
+      answer: "[20, 30, 40]",
+      hint: "arr[start:stop] includes start, excludes stop.",
+      explain: "arr[1:4] grabs indices 1, 2, 3 — that's [20, 30, 40]. Index 4 (50) is excluded."
+    },
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["arr = np.array([1, 2, 3, 4, 5])", "print(arr[-1])"],
+      answer: "5",
+      hint: "Negative indices count from the end: -1 is the last element.",
+      explain: "arr[-1] is the last element of the array: 5."
+    },
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["arr = np.arange(6).reshape(2, 3)", "print(arr.shape)"],
+      answer: "(2, 3)",
+      hint: "reshape(rows, cols) doesn't change the data, only how it's laid out. 2 x 3 = 6 elements, matching arange(6).",
+      explain: "reshape(2, 3) arranges the 6 values into 2 rows and 3 columns, so arr.shape is (2, 3)."
+    },
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["arr = np.array([1, 2, 3, 4])", "print(arr.sum())"],
+      answer: "10",
+      hint: "sum() adds every element together.",
+      explain: "1 + 2 + 3 + 4 = 10."
+    },
+    {
+      type: "predict",
+      task: "What does this print?",
+      code: ["arr = np.array([1, 2, 3, 4])", "print(arr.mean())"],
+      answer: "2.5",
+      hint: "mean() is the sum divided by the number of elements.",
+      explain: "(1 + 2 + 3 + 4) / 4 = 10 / 4 = 2.5."
+    },
+    {
+      type: "predict",
+      task: "What does this print? (this is called boolean masking)",
+      code: ["arr = np.array([1, 2, 3, 4, 5, 6])", "print(arr[arr > 3])"],
+      answer: "[4, 5, 6]",
+      hint: "arr > 3 creates a True/False mask the same shape as arr; indexing with it keeps only the True positions.",
+      explain: "arr > 3 is [F, F, F, T, T, T], so arr[arr > 3] keeps 4, 5, 6."
+    },
+    {
+      type: "write",
+      task: "Write a numpy expression that creates a 3×3 array of zeros.",
+      checks: [/np\.zeros\s*\(/, /3\s*,\s*3/],
+      hint: "np.zeros(shape) — shape is a tuple, so you want np.zeros((3, 3)).",
+      explain: "np.zeros((3, 3)) builds a 3×3 array filled with 0.0.",
+      example: "np.zeros((3, 3))"
+    },
+    {
+      type: "write",
+      task: "Write a numpy expression using arange that produces evenly spaced values starting at 5, counting up by 5 each time (5, 10, 15, 20, 25 ...).",
+      checks: [/np\.arange\s*\(/, /5/],
+      hint: "np.arange(start, stop, step) — start at 5 and step by 5. The exact stop is up to you, as long as it's past 25.",
+      explain: "Something like np.arange(5, 30, 5) works — start at 5, step by 5, and stop anywhere after 25.",
+      example: "np.arange(5, 30, 5)"
+    },
+    {
+      type: "write",
+      task: "You have two matrices, A and B. Write the numpy expression to multiply them as matrices (not element-by-element).",
+      checks: [/(np\.(dot|matmul)\s*\(\s*A\s*,\s*B\s*\)|A\s*@\s*B)/],
+      hint: "Plain * is element-wise. Real matrix multiplication is np.dot(A, B), np.matmul(A, B), or the @ operator.",
+      explain: "A @ B (or np.dot(A, B) / np.matmul(A, B)) performs true matrix multiplication.",
+      example: "A @ B"
+    }
+  ];
+
+  const state = {
+    idx: 0,
+    score: 0,
+    streak: 0,
+    lives: 3,
+    solved: new Array(levels.length).fill(false),
+    answeredThisLevel: false,
+    hintUsedThisLevel: false
+  };
+
+  const gameArea = document.getElementById("game-area");
+  const endArea = document.getElementById("end-area");
+
+  function normalize(s){
+    return s
+      .toLowerCase()
+      .replace(/np\.float64\(|np\.int64\(/g, "")
+      .replace(/[\[\]\(\)\s]/g, "")
+      .replace(/,+$/,"")
+      .replace(/\.0+$/,"");
+  }
+
+  function checkPredict(level, raw){
+    return normalize(raw) === normalize(level.answer);
+  }
+
+  function checkWrite(level, raw){
+    return level.checks.every(re => re.test(raw));
+  }
+
+  function renderProgress(){
+    const grid = document.getElementById("progress-grid");
+    grid.innerHTML = "";
+    levels.forEach((lv, i) => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      if (state.solved[i]) { cell.className += " done"; cell.textContent = "1"; }
+      else { cell.textContent = "0"; }
+      if (i === state.idx && !endReached()) cell.className += " current";
+      grid.appendChild(cell);
+    });
+    document.getElementById("progress-count").textContent =
+      state.solved.filter(Boolean).length + "/" + levels.length;
+  }
+
+  function renderStats(){
+    document.getElementById("stat-score").textContent = state.score;
+    document.getElementById("stat-streak").textContent = state.streak;
+    const hearts = document.getElementById("stat-lives");
+    hearts.innerHTML = "";
+    for (let i=0;i<3;i++){
+      const span = document.createElement("span");
+      span.textContent = "♥";
+      span.className = i < state.lives ? "heart-on" : "heart-off";
+      hearts.appendChild(span);
+    }
+  }
+
+  function endReached(){
+    return state.idx >= levels.length || state.lives <= 0;
+  }
+
+  function render(){
+    renderStats();
+    renderProgress();
+
+    if (state.lives <= 0){
+      renderGameOver();
+      return;
+    }
+    if (state.idx >= levels.length){
+      renderComplete();
+      return;
+    }
+
+    const level = levels[state.idx];
+    state.answeredThisLevel = false;
+    state.hintUsedThisLevel = false;
+
+    const card = document.createElement("div");
+    card.className = "cell-card";
+
+    const badgeClass = level.type === "predict" ? "predict" : "write";
+    const badgeText = level.type === "predict" ? "predict the output" : "write the code";
+
+    let replHtml = "";
+    if (level.type === "predict"){
+      replHtml = `<div class="repl">
+        <span class="in-label">In [${state.idx+1}]:</span>
+        <pre>${level.code.join("\n")}</pre>
+        <span class="out-label">Out[${state.idx+1}]:</span>
+        <pre>?</pre>
+      </div>`;
+    } else {
+      replHtml = `<div class="repl">
+        <span class="in-label">In [${state.idx+1}]:</span>
+        <pre>your code here</pre>
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="cell-head">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+        <span class="lvl">level ${state.idx+1} / ${levels.length}</span>
+      </div>
+      <div class="cell-body">
+        <div class="task">${level.task}</div>
+        ${replHtml}
+        <div class="answer-row">
+          <input type="text" id="answer-input" placeholder="${level.type === 'predict' ? 'type the output…' : 'type your numpy expression…'}" autocomplete="off" spellcheck="false">
+          <button class="btn-run" id="btn-submit">Run ▶</button>
+        </div>
+        <button class="btn-hint" id="btn-hint">💡 show hint (−20 pts)</button>
+        <div class="hint-box" id="hint-box">${level.hint}</div>
+        <div class="feedback" id="feedback"></div>
+        <div class="foot-row" id="foot-row"></div>
+      </div>
+    `;
+
+    gameArea.innerHTML = "";
+    gameArea.appendChild(card);
+
+    const input = document.getElementById("answer-input");
+    const submitBtn = document.getElementById("btn-submit");
+    const hintBtn = document.getElementById("btn-hint");
+    const hintBox = document.getElementById("hint-box");
+    const feedback = document.getElementById("feedback");
+    const footRow = document.getElementById("foot-row");
+
+    input.focus();
+
+    hintBtn.addEventListener("click", () => {
+      if (state.hintUsedThisLevel) return;
+      hintBox.style.display = "block";
+      state.hintUsedThisLevel = true;
+      hintBtn.textContent = "hint used";
+      hintBtn.disabled = true;
+    });
+
+    function submit(){
+      if (state.answeredThisLevel) return;
+      const raw = input.value.trim();
+      if (!raw) { input.classList.add("wrong-flash"); setTimeout(()=>input.classList.remove("wrong-flash"),300); return; }
+
+      const correct = level.type === "predict" ? checkPredict(level, raw) : checkWrite(level, raw);
+      state.answeredThisLevel = true;
+      submitBtn.disabled = true;
+      input.disabled = true;
+
+      if (correct){
+        input.classList.add("right-flash");
+        state.solved[state.idx] = true;
+        state.streak += 1;
+        const base = 100;
+        const streakBonus = (state.streak - 1) * 10;
+        const hintPenalty = state.hintUsedThisLevel ? 20 : 0;
+        const gained = Math.max(base + streakBonus - hintPenalty, 20);
+        state.score += gained;
+
+        feedback.className = "feedback correct";
+        feedback.innerHTML = `✓ Correct! +${gained} pts${state.streak > 1 ? ` (streak ×${state.streak})` : ""}
+          <div class="explain">${level.explain}${level.example ? `<br><br><b>Example:</b> <code>${level.example}</code>` : ""}</div>`;
+      } else {
+        input.classList.add("wrong-flash");
+        state.streak = 0;
+        state.lives -= 1;
+
+        feedback.className = "feedback incorrect";
+        feedback.innerHTML = `✗ Not quite.
+          <div class="explain">${level.explain}${level.example ? `<br><br><b>Example:</b> <code>${level.example}</code>` : ""}</div>`;
+      }
+
+      renderStats();
+      renderProgress();
+
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "btn-next";
+      nextBtn.textContent = state.lives <= 0 ? "See results →" : (state.idx === levels.length - 1 ? "Finish →" : "Next level →");
+      nextBtn.addEventListener("click", () => {
+        state.idx += 1;
+        render();
+      });
+      footRow.innerHTML = "";
+      footRow.appendChild(nextBtn);
+    }
+
+    submitBtn.addEventListener("click", submit);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+  }
+
+  function grade(){
+    const total = levels.length;
+    const solvedCount = state.solved.filter(Boolean).length;
+    const ratio = solvedCount / total;
+    if (ratio === 1 && state.lives === 3) return "S";
+    if (ratio === 1) return "A";
+    if (ratio >= 0.8) return "B";
+    if (ratio >= 0.5) return "C";
+    return "D";
+  }
+
+  function renderComplete(){
+    gameArea.innerHTML = "";
+    const solvedCount = state.solved.filter(Boolean).length;
+    endArea.innerHTML = `
+      <div class="end-card">
+        <div style="font-family:var(--mono);color:var(--muted);font-size:12px;">np.array(results).sum()</div>
+        <h2>Array complete.</h2>
+        <div class="grade">${grade()}</div>
+        <div class="score-line">score: ${state.score} &nbsp;·&nbsp; solved: ${solvedCount}/${levels.length} &nbsp;·&nbsp; lives left: ${state.lives}</div>
+        <p>${solvedCount === levels.length ? "Every cell filled in — that's a full pass through indexing, slicing, reshaping, aggregation, masking, and matrix ops." : "Not every cell filled in this run — the gaps are exactly where to focus next."}</p>
+        <button class="btn-run" id="btn-restart" style="margin-top:14px;">Run again ▶</button>
+      </div>
+    `;
+    document.getElementById("btn-restart").addEventListener("click", restart);
+  }
+
+  function renderGameOver(){
+    gameArea.innerHTML = "";
+    const solvedCount = state.solved.filter(Boolean).length;
+    endArea.innerHTML = `
+      <div class="end-card">
+        <div style="font-family:var(--mono);color:var(--muted);font-size:12px;">raise EmptyLivesError</div>
+        <h2>Out of lives.</h2>
+        <div class="score-line">score: ${state.score} &nbsp;·&nbsp; solved: ${solvedCount}/${levels.length}</div>
+        <p>Three misses and the run ends — that's the deal. Everything solved so far stayed solved.</p>
+        <button class="btn-run" id="btn-restart" style="margin-top:14px;">Try again ▶</button>
+      </div>
+    `;
+    document.getElementById("btn-restart").addEventListener("click", restart);
+  }
+
+  function restart(){
+    state.idx = 0;
+    state.score = 0;
+    state.streak = 0;
+    state.lives = 3;
+    state.solved = new Array(levels.length).fill(false);
+    endArea.innerHTML = "";
+    render();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
