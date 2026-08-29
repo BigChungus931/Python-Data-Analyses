@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Matplotlib Quiz Adventure! 📊</title>
+<style>
+  :root{
+    --purple:#7c3aed;
+    --pink:#ec4899;
+    --green:#22c55e;
+    --red:#ef4444;
+    --blue:#3b82f6;
+    --bg:#f5f3ff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    background: linear-gradient(135deg, #fef3c7, #ddd6fe, #bfdbfe);
+    min-height:100vh;
+    padding:20px;
+  }
+  .header{
+    text-align:center;
+    color:#4c1d95;
+    margin-bottom:10px;
+  }
+  .header h1{
+    font-size:2.2em;
+    margin:0;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .header p{
+    font-size:1.1em;
+    color:#6d28d9;
+  }
+  #scoreboard{
+    position:sticky;
+    top:10px;
+    z-index:10;
+    background:white;
+    border-radius:20px;
+    padding:12px 20px;
+    max-width:500px;
+    margin:0 auto 20px auto;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    text-align:center;
+    font-size:1.2em;
+    font-weight:bold;
+    color:var(--purple);
+  }
+  #quiz-container{
+    max-width:700px;
+    margin:0 auto;
+  }
+  .question-card{
+    background:white;
+    border-radius:18px;
+    padding:20px 25px;
+    margin-bottom:18px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    border:3px solid transparent;
+  }
+  .question-card.answered.correct{
+    border-color:var(--green);
+  }
+  .question-card.answered.wrong{
+    border-color:var(--red);
+  }
+  .q-title{
+    font-size:1.15em;
+    font-weight:bold;
+    color:#3730a3;
+    margin-bottom:12px;
+  }
+  .q-number{
+    display:inline-block;
+    background:var(--purple);
+    color:white;
+    border-radius:50%;
+    width:28px;
+    height:28px;
+    text-align:center;
+    line-height:28px;
+    margin-right:8px;
+    font-size:0.9em;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .option-btn{
+    padding:12px 15px;
+    border-radius:12px;
+    border:2px solid #ddd6fe;
+    background:#faf5ff;
+    text-align:left;
+    font-size:1em;
+    cursor:pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    color:#333;
+  }
+  .option-btn:hover:not(:disabled){
+    background:#ede9fe;
+    transform: translateX(4px);
+  }
+  .option-btn:disabled{
+    cursor:default;
+  }
+  .option-btn.correct-answer{
+    background:var(--green);
+    border-color:var(--green);
+    color:white;
+    font-weight:bold;
+  }
+  .option-btn.wrong-answer{
+    background:var(--red);
+    border-color:var(--red);
+    color:white;
+    font-weight:bold;
+  }
+  .feedback{
+    margin-top:10px;
+    font-weight:bold;
+    font-size:1.05em;
+    display:none;
+  }
+  .feedback.show{
+    display:block;
+  }
+  .feedback.correct-text{ color:var(--green); }
+  .feedback.wrong-text{ color:var(--red); }
+  #finalScore{
+    display:none;
+    text-align:center;
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    max-width:500px;
+    margin:20px auto;
+    box-shadow:0 6px 16px rgba(0,0,0,0.2);
+  }
+  #finalScore h2{
+    color:var(--purple);
+    font-size:2em;
+  }
+  #finalScore p{
+    font-size:1.3em;
+  }
+  .reset-btn{
+    margin-top:15px;
+    padding:12px 25px;
+    background:var(--pink);
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-size:1.1em;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .reset-btn:hover{
+    background:var(--purple);
+  }
+  .emoji{
+    font-size:1.5em;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Matplotlib Quiz Adventure! 🐍</h1>
+  <p>Pick an answer and find out right away if you got it! Good luck! 🌟</p>
+</div>
+
+<div id="scoreboard">Score: <span id="scoreNum">0</span> / <span id="totalNum">0</span> ⭐</div>
+
+<div id="quiz-container"></div>
+
+<div id="finalScore">
+  <h2>🎉 Quiz Complete! 🎉</h2>
+  <p id="finalText"></p>
+  <button class="reset-btn" onclick="resetQuiz()">Try Again 🔄</button>
+</div>
+
+<script>
+const questions = [
+  {q:"Which library do we import to draw charts in Python?", options:["numpy","matplotlib","pandas","turtle"], correct:1},
+  {q:"What short nickname do we usually give pyplot when importing it?", options:["mp","plt","py","plot"], correct:1},
+  {q:"Which line correctly imports pyplot?", options:["import matplotlib.pyplot as plt","import pyplot matplotlib","from plt import matplotlib","import plt.matplotlib"], correct:0},
+  {q:"Which function adds a title to your chart?", options:['title("My Chart")','plt.title("My Chart")','plt.title(My Chart)','plt.head("My Chart")'], correct:1},
+  {q:"Which function actually SHOWS your chart on screen?", options:["plt.display()","plt.graph()","plt.show()","plt.chart()"], correct:2},
+  {q:"Which function labels the x-axis?", options:['plt.xlabel("Days")','plt.label_x("Days")','plt.xname("Days")','plt.xaxis("Days")'], correct:0},
+  {q:"Which function labels the y-axis?", options:['plt.yname("Sales")','plt.ylabel("Sales")','plt.yaxis("Sales")','plt.label_y("Sales")'], correct:1},
+  {q:"Which function draws a BAR chart?", options:["plt.plot()","plt.pie()","plt.bar()","plt.scatter()"], correct:2},
+  {q:"Which function draws a LINE graph?", options:["plt.plot()","plt.bar()","plt.pie()","plt.dot()"], correct:0},
+  {q:"Which function draws a SCATTER chart (lots of dots)?", options:["plt.dots()","plt.scatter()","plt.points()","plt.bar()"], correct:1},
+  {q:"Which function draws a PIE chart?", options:["plt.circle()","plt.slice()","plt.pie()","plt.round()"], correct:2},
+  {q:"What do we call the flat, horizontal line at the bottom of a chart?", options:["y-axis","x-axis","z-axis","baseline only"], correct:1},
+  {q:"What do we call the up-and-down line on the side of a chart?", options:["x-axis","y-axis","top-axis","h-axis"], correct:1},
+  {q:"What does plt.xticks(rotation=30) do?", options:["Rotates the whole chart","Tilts the x-axis labels","Tilts the y-axis labels","Changes the chart color"], correct:1},
+  {q:"True or False: matplotlib is a real Python library.", options:["True","False"], correct:0},
+  {q:"True or False: You need to install matplotlib before your very first use.", options:["True","False"], correct:0},
+  {q:"Which symbol starts a comment in Python code?", options:["//","#","--","**"], correct:1},
+  {q:"What file ending (extension) does a Python script use?", options:[".py",".pyt",".pt",".pyc"], correct:0},
+  {q:"Which function shows a legend (little box explaining colors)?", options:["plt.key()","plt.legend()","plt.box()","plt.info()"], correct:1},
+  {q:"Which word inside plt.plot() changes the LINE color?", options:["color","tint","paint","hue"], correct:0},
+  {q:"Which word inside plt.bar() changes the BAR color?", options:["shade","color","fill","paint"], correct:1},
+  {q:"Which function adds grid lines to your chart?", options:["plt.lines()","plt.grid()","plt.net()","plt.boxes()"], correct:1},
+  {q:"In plt.plot(x, y), what does 'x' usually represent?", options:["The chart title","Values on the horizontal axis","The chart color","The legend"], correct:1},
+  {q:"In plt.plot(x, y), what does 'y' usually represent?", options:["Values on the vertical axis","The x-axis label","The chart size","The file name"], correct:0},
+  {q:"Which function saves your chart as an image file?", options:["plt.save()","plt.export()","plt.savefig()","plt.download()"], correct:2},
+  {q:"Which symbol makes text jump to a NEW LINE?", options:["/","\\n","\\l","n"], correct:1},
+  {q:"Which chart is BEST to show parts of a whole, like percentages?", options:["Bar Graph","Line Graph","Pie Chart","Scatter Chart"], correct:2},
+  {q:"Which chart is BEST to show change over TIME (like temperature each day)?", options:["Pie Chart","Line Graph","Bar Graph","Scatter Chart"], correct:1},
+  {q:"Which chart is BEST for comparing amounts between groups (like fruit sales)?", options:["Scatter Chart","Pie Chart","Bar Graph","Line Graph"], correct:2},
+  {q:"Which chart shows many separate dots scattered around?", options:["Bar Graph","Scatter Chart","Pie Chart","Line Graph"], correct:1},
+  {q:"What do we call ONE single dot or value on a chart?", options:["A data point","A pixel","A tick","A label"], correct:0},
+  {q:"Which library is often used together with matplotlib to organize data in tables?", options:["turtle","pandas","random","math"], correct:1},
+  {q:"Which library helps with numbers and math arrays, often used with matplotlib?", options:["numpy","pandas","time","os"], correct:0},
+  {q:"'plt' is short for which word?", options:["plot","pyplot","plate","plotter"], correct:1},
+  {q:"Which function adds extra text INSIDE the chart?", options:["plt.text()","plt.note()","plt.write()","plt.say()"], correct:0},
+  {q:"Which function changes the SIZE of your whole figure?", options:["plt.size()","plt.figure(figsize=(6,4))","plt.resize()","plt.dimensions()"], correct:1},
+  {q:"What do we call the whole picture/chart we create and save?", options:["A window","A figure","A canvas box","A screen"], correct:1},
+  {q:"True or False: You can draw more than one line on the same chart.", options:["True","False"], correct:0},
+  {q:"Which function lets you show multiple charts side-by-side?", options:["plt.multi()","plt.subplot()","plt.split()","plt.grid2()"], correct:1},
+  {q:"What must you do BEFORE drawing any chart with matplotlib?", options:["Turn on the computer","Import matplotlib","Delete numpy","Restart Python"], correct:1},
+  {q:"Which of these is NOT a real matplotlib chart type?", options:["Bar Graph","Pie Chart","Cloud Chart","Line Graph"], correct:2},
+  {q:"Which word inside plt.scatter() can change the shape of the dots?", options:["marker","dot","shape","point"], correct:0},
+  {q:"True or False: plt.show() is needed to actually SEE the chart pop up.", options:["True","False"], correct:0},
+  {q:"Which is written correctly with quotes for a chart title?", options:['plt.title(My Chart)','plt.title("My Chart")',"plt.title('My Chart)",'plt.Title("My Chart")'], correct:1},
+  {q:"Which axis usually shows categories like 'Mon, Tue, Wed'?", options:["y-axis","x-axis","z-axis","w-axis"], correct:1},
+  {q:"Which axis usually shows numbers like sales or scores?", options:["x-axis","y-axis","top-axis","side-axis"], correct:1},
+  {q:"True or False: matplotlib can ONLY make one single type of chart.", options:["True","False"], correct:1},
+  {q:"Which part of plt.plot(x, y, label='Sales') adds a name for the legend?", options:["label='Sales'","name='Sales'","legend='Sales'","title='Sales'"], correct:0},
+  {q:"Which of these is a common file type for a saved chart image?", options:[".txt",".png",".exe",".zip"], correct:1},
+  {q:"Which function clears/erases the current chart so you can start fresh?", options:["plt.clear()","plt.clf()","plt.erase()","plt.new()"], correct:1}
+];
+
+let score = 0;
+let answeredCount = 0;
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function buildQuiz(){
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  document.getElementById('totalNum').textContent = questions.length;
+  document.getElementById('scoreNum').textContent = 0;
+  document.getElementById('finalScore').style.display = 'none';
+  score = 0;
+  answeredCount = 0;
+
+  questions.forEach((item, qIndex) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = 'card-' + qIndex;
+
+    const title = document.createElement('div');
+    title.className = 'q-title';
+    title.innerHTML = '<span class="q-number">' + (qIndex+1) + '</span>' + item.q;
+    card.appendChild(title);
+
+    const optsDiv = document.createElement('div');
+    optsDiv.className = 'options';
+
+    // build option order but keep track of correct text
+    const correctText = item.options[item.correct];
+    const optionList = item.options.map((text, idx) => ({text, isCorrect: idx === item.correct}));
+
+    optionList.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt.text;
+      btn.onclick = () => selectAnswer(qIndex, btn, opt.isCorrect, optsDiv, correctText);
+      optsDiv.appendChild(btn);
+    });
+
+    card.appendChild(optsDiv);
+
+    const feedback = document.createElement('div');
+    feedback.className = 'feedback';
+    feedback.id = 'feedback-' + qIndex;
+    card.appendChild(feedback);
+
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(qIndex, clickedBtn, isCorrect, optsDiv, correctText){
+  // disable all buttons in this question
+  const allBtns = optsDiv.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  const card = document.getElementById('card-' + qIndex);
+  const feedback = document.getElementById('feedback-' + qIndex);
+
+  if(isCorrect){
+    clickedBtn.classList.add('correct-answer');
+    card.classList.add('answered','correct');
+    feedback.classList.add('show','correct-text');
+    feedback.textContent = "✅ Correct! Great job! 🎉";
+    score++;
+  } else {
+    clickedBtn.classList.add('wrong-answer');
+    card.classList.add('answered','wrong');
+    feedback.classList.add('show','wrong-text');
+    feedback.textContent = "❌ Not quite! The correct answer is: " + correctText;
+    // highlight the correct one too
+    allBtns.forEach(b => {
+      if(b.textContent === correctText){
+        b.classList.add('correct-answer');
+      }
+    });
+  }
+
+  answeredCount++;
+  document.getElementById('scoreNum').textContent = score;
+
+  if(answeredCount === questions.length){
+    showFinal();
+  }
+}
+
+function showFinal(){
+  const finalDiv = document.getElementById('finalScore');
+  const finalText = document.getElementById('finalText');
+  let msg = "You scored " + score + " out of " + questions.length + "! ";
+  const pct = score/questions.length;
+  if(pct === 1) msg += "🏆 PERFECT SCORE! You're a matplotlib master!";
+  else if(pct >= 0.8) msg += "🌟 Awesome work!";
+  else if(pct >= 0.5) msg += "👍 Good job, keep practicing!";
+  else msg += "💪 Nice try! Practice makes perfect!";
+  finalText.textContent = msg;
+  finalDiv.style.display = 'block';
+  finalDiv.scrollIntoView({behavior:'smooth'});
+}
+
+function resetQuiz(){
+  buildQuiz();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+buildQuiz();
+</script>
+
+</body>
+</html>
