@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Matplotlib Practical Challenges! 💻</title>
+<style>
+  :root{
+    --purple:#7c3aed;
+    --pink:#ec4899;
+    --blue:#3b82f6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    background: linear-gradient(135deg, #fef3c7, #ddd6fe, #bfdbfe);
+    min-height:100vh;
+    padding:20px;
+  }
+  .header{
+    text-align:center;
+    color:#4c1d95;
+    margin-bottom:25px;
+  }
+  .header h1{
+    font-size:2.2em;
+    margin:0;
+    text-shadow: 2px 2px 0 #fff;
+  }
+  .header p{
+    font-size:1.1em;
+    color:#6d28d9;
+  }
+  #container{
+    max-width:700px;
+    margin:0 auto;
+  }
+  .practical-card{
+    background:white;
+    border-radius:18px;
+    padding:20px 25px;
+    margin-bottom:18px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    border:3px solid var(--blue);
+  }
+  .q-title{
+    font-size:1.15em;
+    font-weight:bold;
+    color:#1d4ed8;
+    margin-bottom:12px;
+  }
+  .q-number{
+    display:inline-block;
+    background:var(--purple);
+    color:white;
+    border-radius:50%;
+    width:28px;
+    height:28px;
+    text-align:center;
+    line-height:28px;
+    margin-right:8px;
+    font-size:0.9em;
+  }
+  .task-desc{
+    background:#eff6ff;
+    border-radius:10px;
+    padding:10px 14px;
+    margin-bottom:12px;
+    color:#1e3a8a;
+    font-size:0.98em;
+  }
+  .solution-btn{
+    padding:10px 18px;
+    background:var(--blue);
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-size:1em;
+    cursor:pointer;
+    font-family:inherit;
+    font-weight:bold;
+  }
+  .solution-btn:hover{
+    background:#1d4ed8;
+  }
+  .code-block{
+    display:none;
+    background:#1e1e2e;
+    color:#e2e8f0;
+    border-radius:12px;
+    padding:16px;
+    margin-top:14px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size:0.92em;
+    white-space:pre-wrap;
+    overflow-x:auto;
+    line-height:1.5;
+  }
+  .code-block.show{
+    display:block;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💻 Matplotlib Practical Challenges! 📊</h1>
+  <p>Try to write the code yourself first, then tap "Show Solution" to check!</p>
+</div>
+
+<div id="container"></div>
+
+<script>
+const practicalQuestions = [
+  {
+    task: "Write code to plot a LINE graph for x = [1,2,3,4,5] and y = [2,4,6,8,10]. Add a title 'Doubling Numbers' and label both axes.",
+    solution: `import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 6, 8, 10]
+
+plt.plot(x, y, marker='o')
+plt.title("Doubling Numbers")
+plt.xlabel("x")
+plt.ylabel("y")
+
+plt.show()`
+  },
+  {
+    task: "Write code to make a BAR chart comparing fruit sales: apples=30, bananas=45, cherries=20. Use different colors for each bar if you can!",
+    solution: `import matplotlib.pyplot as plt
+
+fruits = ["Apples", "Bananas", "Cherries"]
+sales = [30, 45, 20]
+
+plt.bar(fruits, sales, color=["red", "yellow", "darkred"])
+plt.title("Fruit Sales")
+plt.xlabel("Fruit")
+plt.ylabel("Amount Sold")
+
+plt.show()`
+  },
+  {
+    task: "Write code to make a SCATTER plot for x = [1,2,3,4,5] and y = [5,3,4,2,6]. Use a star marker ('*') and make the dots green.",
+    solution: `import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y = [5, 3, 4, 2, 6]
+
+plt.scatter(x, y, marker="*", color="green", s=150)
+plt.title("Scatter with Star Markers")
+plt.xlabel("x")
+plt.ylabel("y")
+
+plt.show()`
+  },
+  {
+    task: "Write code to create a figure with 2 subplots SIDE BY SIDE (1 row, 2 columns). Put a line chart in the first one and a bar chart in the second.",
+    solution: `import matplotlib.pyplot as plt
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+
+x = [1, 2, 3, 4]
+y = [10, 20, 15, 25]
+
+ax1.plot(x, y)
+ax1.set_title("Line Chart")
+
+ax2.bar(["A", "B", "C", "D"], y)
+ax2.set_title("Bar Chart")
+
+plt.tight_layout()
+plt.show()`
+  },
+  {
+    task: "Write code to plot TWO lines on the same chart: y1=[1,4,9,16,25] and y2=[1,2,3,4,5], both against x=[1,2,3,4,5]. Add labels and a legend.",
+    solution: `import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y1 = [1, 4, 9, 16, 25]
+y2 = [1, 2, 3, 4, 5]
+
+plt.plot(x, y1, label="Squares", color="blue")
+plt.plot(x, y2, label="Straight Line", color="orange")
+
+plt.title("Two Lines, One Chart")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+
+plt.show()`
+  }
+];
+
+function buildPractical(){
+  const container = document.getElementById('container');
+  container.innerHTML = '';
+
+  practicalQuestions.forEach((item, pIndex) => {
+    const card = document.createElement('div');
+    card.className = 'practical-card';
+
+    const title = document.createElement('div');
+    title.className = 'q-title';
+    title.innerHTML = '<span class="q-number">' + (pIndex+1) + '</span>Practical Challenge';
+    card.appendChild(title);
+
+    const taskDesc = document.createElement('div');
+    taskDesc.className = 'task-desc';
+    taskDesc.textContent = item.task;
+    card.appendChild(taskDesc);
+
+    const btn = document.createElement('button');
+    btn.className = 'solution-btn';
+    btn.textContent = 'Show Solution 💻';
+
+    const codeBlock = document.createElement('div');
+    codeBlock.className = 'code-block';
+    codeBlock.textContent = item.solution;
+
+    btn.onclick = () => {
+      const isShowing = codeBlock.classList.toggle('show');
+      btn.textContent = isShowing ? 'Hide Solution 🙈' : 'Show Solution 💻';
+    };
+
+    card.appendChild(btn);
+    card.appendChild(codeBlock);
+    container.appendChild(card);
+  });
+}
+
+buildPractical();
+</script>
+
+</body>
+</html>
